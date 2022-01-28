@@ -82,11 +82,17 @@
     }
     
     const run = () => {
+        let wsdFile = path.join(app.getPath('userData'), 'temp.wsb')
+        let installFile = path.join(app.getPath('temp'), 'bloock-install.bat')
         let wsd = `
             <Configuration>
                 <vGpu>${config.vGpu? 'Enable': 'Disable'}</vGpu>
                 <Networking>${config.network? 'Enable': 'Disable'}</Networking>
                 <MappedFolders>
+                    <MappedFolder>
+                        <HostFolder>${app.getPath('temp')}</HostFolder>
+                        <ReadOnly>true</ReadOnly>
+                    </MappedFolder>
                 ${config.sharedFolders.map(e => `
                     <MappedFolder>
                         <HostFolder>${e.path}</HostFolder>
@@ -95,28 +101,37 @@
                 `).join('')}
                 </MappedFolders>
                 <LogonCommand>
-                ${config.preCmds.map(e => `<Command>${e.cmd}</Command>`).join('')}
+                    <Command>C:\\users\\WDAGUtilityAccount\\Desktop\\Temp\\bloock-install.bat</Command>
                 </LogonCommand>
             </Configuration>
         `
 
+        if (!fs.existsSync(app.getPath('temp'))){
+            fs.mkdirSync(app.getPath('temp'));
+        }
+
         if (!fs.existsSync(app.getPath('userData'))){
             fs.mkdirSync(app.getPath('userData'));
         }
-        let wsdFile = path.join(app.getPath('userData'), 'temp.wsb')
         fs.rm(wsdFile, (err) => {
             if (err) {
                 console.error("fs.rm", err);
             } 
-            fs.writeFile(wsdFile, wsd, (err) => {
+            fs.writeFile(installFile, config.preCmds.map(e => `${e.cmd}`).join('\n'), (err) => {
                 if (err) {
                     console.error("fs.writeFile", err);
                 }
-                child.exec(wsdFile, function(err, data) {
+
+                fs.writeFile(wsdFile, wsd, (err) => {
                     if (err) {
-                        console.error("child", err);
-                    } 
-                    console.log(data.toString());
+                        console.error("fs.writeFile", err);
+                    }
+                    child.exec(wsdFile, function(err, data) {
+                        if (err) {
+                            console.error("child", err);
+                        } 
+                        console.log(data.toString());
+                    })
                 })
             })
         })
