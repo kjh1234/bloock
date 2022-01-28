@@ -4,9 +4,11 @@
     import { bundleList } from "../stores";
     import { Button, Navbar, NavbarBrand, ListGroup, ListGroupItem, InputGroup, InputGroupText, FormGroup, Label, Input } from "sveltestrap";
     import { Trash2Icon } from "svelte-feather-icons";
-import { windowsStore } from "process";
+    const { app, dialog} = require("electron").remote;
+    const child = require('child_process');
+    const fs = require('fs');
+    const path = require('path');
     
-    const {dialog} = require("electron").remote;
     export let currentRoute;
     const params = {};
 
@@ -78,12 +80,63 @@ import { windowsStore } from "process";
             // document.body.focus()
         }
     }
-    console.log("dialog", dialog)
+    
+    const run = () => {
+        let wsd = `
+            <Configuration>
+                <vGpu>${config.vGpu? 'Enable': 'Disable'}</vGpu>
+                <Networking>${config.network? 'Enable': 'Disable'}</Networking>
+                <MappedFolders>
+                ${config.sharedFolders.map(e => `
+                    <MappedFolder>
+                        <HostFolder>${e.path}</HostFolder>
+                        <ReadOnly>${e.readOnly}</ReadOnly>
+                    </MappedFolder>
+                `)}
+                </MappedFolders>
+                <LogonCommand>
+                ${config.preCmds.map(e => `
+                    <Command>${e.cmd}</Command>
+                `)}
+                </LogonCommand>
+            </Configuration>
+        `
 
+        if (!fs.existsSync(app.getPath('userData'))){
+            fs.mkdirSync(app.getPath('userData'));
+        }
+        let wsdFile = path.join(app.getPath('userData'), 'temp.wsb')
+        fs.rm(wsdFile, (err) => {
+            if (err) {
+                console.error("fs.rm", err);
+            } 
+            fs.writeFile(wsdFile, wsd, (err) => {
+                if (err) {
+                    console.error("fs.writeFile", err);
+                }
+                child.exec(wsdFile, function(err, data) {
+                    if (err) {
+                        console.error("child", err);
+                    } 
+                    console.log(data.toString());
+                })
+            })
+        })
+        // child.exec(`start cmd @cmd /c type "${wsd.replaceAll('\n', '\\\\n').replaceAll('\r', '\\\\r')}" > temp.wsb`, function(err, data) {
+        // child.exec(`start cmd @cmd type nul > temp.wsb`, function(err, data) {
+        //     if(err){
+        //     console.error(err);
+        //     return;
+        //     }
+        
+        //     console.log(data.toString());
+        // });
+    }
 </script>
 
 <Navbar color="light" light expand="md">
     <Input placeholder="Check it out" bind:value={lancher.name} />
+    <Button color="primary" outline on:click={run}>Run</Button>
 </Navbar>
 
 <FormGroup>
