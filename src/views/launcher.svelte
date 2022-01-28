@@ -92,12 +92,10 @@
                         <HostFolder>${e.path}</HostFolder>
                         <ReadOnly>${e.readOnly}</ReadOnly>
                     </MappedFolder>
-                `)}
+                `).join('')}
                 </MappedFolders>
                 <LogonCommand>
-                ${config.preCmds.map(e => `
-                    <Command>${e.cmd}</Command>
-                `)}
+                ${config.preCmds.map(e => `<Command>${e.cmd}</Command>`).join('')}
                 </LogonCommand>
             </Configuration>
         `
