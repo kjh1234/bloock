@@ -5,7 +5,7 @@
   "main": "main.js",
   "build": {
     "icon": "public/favicon.png",
-    "productName": "MS Windows Sandbox Launcher App",
+    "productName": "bloock",
     "files": [
       "public/**/*",
       "main.js",
