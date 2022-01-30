@@ -1,11 +1,11 @@
 {
   "name": "bloock",
-  "version": "0.0.1",
+  "version": "0.0.6",
   "private": true,
   "main": "main.js",
   "build": {
     "icon": "public/favicon.png",
-    "productName": "bloock",
+    "productName": "Bloock",
     "files": [
       "public/**/*",
       "main.js",

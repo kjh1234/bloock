@@ -72,8 +72,8 @@ Launcher: <Button color="primary" outline on:click={createModalOpen}
     </Col>
 </Row>
 
-<Modal isOpen={open} {createModalClose}>
-    <ModalHeader {createModalClose}>Create New Launcher</ModalHeader>
+<Modal isOpen={open} toggle={createModalClose}>
+    <ModalHeader toggle={createModalClose}>Create New Launcher</ModalHeader>
     <ModalBody>
         <Form>
             <FormGroup>

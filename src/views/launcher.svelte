@@ -1,5 +1,5 @@
 <script>
-    import { getContext, tick } from "svelte";
+    import { getContext, tick, onDestroy } from "svelte";
     // import { dialog } from "electron";
     import { bundleList } from "../stores";
     import { Button, Navbar, NavbarBrand, ListGroup, ListGroupItem, InputGroup, InputGroupText, FormGroup, Label, Input } from "sveltestrap";
@@ -28,6 +28,7 @@
             vGpu: false,
             network: true,
             sharedFolders: [],
+            installs: [],
             preCmds: []
         }, lancher.config);
     })()
@@ -35,6 +36,11 @@
     bundleList.subscribe((value) => {
         bundles = value;
     });
+
+    onDestroy(() => {
+        bundleList.set(bundles);
+    });
+
 
     const appendFolder = () => {
         dialog.showOpenDialog({
@@ -61,11 +67,10 @@
     }
 
     const appendCommand = (e) => {
+        e.preventDefault();
         config.preCmds.push({cmd: ""})
         config = config;
         bundleList.set(bundles);
-
-        e.preventDefault();
 
         tick().then(() => {
             e.target.blur(); 
@@ -73,17 +78,32 @@
         });
     }
     const removeCommand = (cmd) => {
-        if(confirm("삭제 하시겠습니까?")){
-            // config.preCmds = config.preCmds.filter(e => e !== cmd)
-            // bundleList.set(bundles);
+        config.preCmds = config.preCmds.filter(e => e !== cmd)
+        bundleList.set(bundles);
+    }
+    
+    const appendInstall = (e) => {
+        e.preventDefault();
+        config.installs.push({
+            url: "",
+            cmd: ""
+        })
+        config = config;
+        bundleList.set(bundles);
 
-            // document.body.focus()
-        }
+    }
+    const removeInstall = (install) => {
+        config.installs = config.installs.filter(e => e !== install)
+        bundleList.set(bundles);
     }
     
     const run = () => {
         let wsdFile = path.join(app.getPath('userData'), 'temp.wsb')
         let installFile = path.join(app.getPath('temp'), 'bloock-install.bat')
+        let runnerFile = path.join(app.getPath('temp'), 'runner.bat')
+
+        let sandboxPath = "C:\\users\\WDAGUtilityAccount\\Desktop\\Temp"
+
         let wsd = `
             <Configuration>
                 <vGpu>${config.vGpu? 'Enable': 'Disable'}</vGpu>
@@ -101,7 +121,7 @@
                 `).join('')}
                 </MappedFolders>
                 <LogonCommand>
-                    <Command>C:\\users\\WDAGUtilityAccount\\Desktop\\Temp\\bloock-install.bat</Command>
+                    <Command>${sandboxPath}\\bloock-install.bat</Command>
                 </LogonCommand>
             </Configuration>
         `
@@ -113,26 +133,42 @@
         if (!fs.existsSync(app.getPath('userData'))){
             fs.mkdirSync(app.getPath('userData'));
         }
-        fs.rm(wsdFile, (err) => {
-            if (err) {
-                console.error("fs.rm", err);
-            } 
-            fs.writeFile(installFile, config.preCmds.map(e => `${e.cmd}`).join('\n'), (err) => {
-                if (err) {
-                    console.error("fs.writeFile", err);
-                }
 
-                fs.writeFile(wsdFile, wsd, (err) => {
-                    if (err) {
-                        console.error("fs.writeFile", err);
-                    }
-                    child.exec(wsdFile, function(err, data) {
-                        if (err) {
-                            console.error("child", err);
-                        } 
-                        console.log(data.toString());
-                    })
-                })
+        Promise.all([
+            new Promise(resolve => fs.rm(wsdFile, (err) => {
+                if (err) { console.error("fs.wsdFile", err); } 
+                resolve()
+            })),
+            new Promise(resolve => fs.rm(installFile, (err) => {
+                if (err) { console.error("fs.installFile", err); } 
+                resolve()
+            })),
+            new Promise(resolve => fs.rm(runnerFile, (err) => {
+                if (err) { console.error("fs.runnerFile", err); } 
+                resolve()
+            }))
+        ]).then(() => {
+            return Promise.all([,
+                new Promise(resolve => fs.writeFile(wsdFile, wsd, (err) => {
+                    resolve()
+                })),
+                new Promise(resolve => fs.writeFile(installFile, 
+                    `${config.installs.map(e => `${e.cmd}`).join('\n')}
+                    \n%USERPROFILE%\\Desktop\\Temp\\refresh.bat
+                    `, (err) => {
+                        resolve()
+                })),
+                new Promise(resolve => fs.writeFile(runnerFile, config.preCmds.map(e => `${e.cmd}`).join('\n'), (err) => {
+                    resolve()
+                }))
+            ])
+        }).then(() => {
+
+            child.exec(wsdFile, function(err, data) {
+                if (err) {
+                    console.error("child", err);
+                } 
+                console.log(data.toString());
             })
         })
         // child.exec(`start cmd @cmd /c type "${wsd.replaceAll('\n', '\\\\n').replaceAll('\r', '\\\\r')}" > temp.wsb`, function(err, data) {
@@ -174,7 +210,26 @@
         {/each}
     </ListGroup>
 </FormGroup>
+
 <FormGroup>
+    <Button color="primary" outline on:click={appendInstall}>설치파일추가</Button>
+    <ListGroup numbered>
+        {#each config.installs as install, index}
+        <ListGroupItem>
+            <InputGroup>
+                <Input placeholder="Append URL" bind:value={install.url}/>
+                <InputGroupText>
+                    <span on:click={removeInstall(install)}><Trash2Icon size="1x"/></span>
+                </InputGroupText>
+            </InputGroup>
+            <Input type="textarea" placeholder="Append Install Command" bind:value={install.cmd}/>
+        </ListGroupItem>
+        {/each}
+    </ListGroup>
+</FormGroup>
+
+<FormGroup>
+    <Label>시작 프로그램</Label>
     <ListGroup numbered>
         {#each config.preCmds as cmd, index}
         <ListGroupItem>

@@ -20,7 +20,11 @@
         CardTitle,
         Col,
         Row,
-        Popover, ListGroup, ListGroupItem
+        Popover, ListGroup, ListGroupItem,
+    ButtonDropdown,
+    DropdownItem,
+    DropdownMenu,
+    DropdownToggle
     } from "sveltestrap";
     import { MoreHorizontalIcon } from "svelte-feather-icons";
 
@@ -55,6 +59,11 @@
     const moveBundle = (id) => {
         navigateTo(`/bundle/${id}`);
     };
+
+    const removeBundle = ( bundle) => {
+        list = list.filter(e => e !== bundle)
+        bundleList.set(list);
+    }
 </script>
 
 <h1>dashboard</h1>
@@ -70,7 +79,8 @@ Bundle: <Button color="primary" outline on:click={createModalOpen}
                     <Card class="mb-3" on:click={moveBundle(item.id)}>
                         <CardHeader>
                             <CardTitle
-                                >Bundle <a id="{`btnMent${item.id}`}"
+                                >Bundle 
+                                <a id="{`btnMent${item.id}`}"
                                     style="float:right"
                                     on:click|stopPropagation={() => {}}  tabindex="0"
                                     ><MoreHorizontalIcon size="1x" /></a
@@ -89,8 +99,8 @@ Bundle: <Button color="primary" outline on:click={createModalOpen}
     </Row>
 {/each}
 
-<Modal isOpen={open} {createModalClose}>
-    <ModalHeader {createModalClose}>Create New Bundle</ModalHeader>
+<Modal isOpen={open} toggle={createModalClose}>
+    <ModalHeader toggle={createModalClose}>Create New Bundle</ModalHeader>
     <ModalBody>
         <Form>
             <FormGroup>
@@ -114,7 +124,7 @@ Bundle: <Button color="primary" outline on:click={createModalOpen}
 {#each list as item}
 <Popover placement="right" target="{`btnMent${item.id}`}" dismissible>
     <ListGroup>
-        <ListGroupItem color="danger">삭제</ListGroupItem>
+        <ListGroupItem color="danger" on:click={removeBundle(item)}>삭제</ListGroupItem>
     </ListGroup>
 </Popover>
 {/each}
