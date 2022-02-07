@@ -1,7 +1,8 @@
 <script>
-    import { setContext } from 'svelte'
+    import { setContext, tick } from 'svelte'
     import { navigateTo, Navigate, Route } from "svelte-router-spa";
     import { Button, Col, Row, ListGroup, ListGroupItem, Modal, ModalHeader, ModalBody, ModalFooter, Form, FormGroup, Label, Input } from "sveltestrap";
+    import { Trash2Icon } from "svelte-feather-icons";
     import { bundleList } from "../stores";
     export let currentRoute;
     const params = {};
@@ -48,6 +49,20 @@
         // lancherId = id
         navigateTo(`/bundle/${bundleId}/launcher/${id}`)
     }
+
+    const removeLauncher = async (launcher) => {
+        if(lancherId === launcher.id) {
+        navigateTo(`/bundle/${bundleId}`)
+        }
+
+        await tick();
+        let bundle = bundles.filter(
+            (e) => e.id === bundleId
+        )[0];
+        list = list.filter(e => e !== launcher)
+        bundle.lanchers = list
+        bundleList.set(bundles);
+    }
 </script>
 
 bundle
@@ -63,7 +78,8 @@ Launcher: <Button color="primary" outline on:click={createModalOpen}
     <Col xs="3">
         <ListGroup>
             {#each list as item}
-            <ListGroupItem tag="a" on:click={handleChangeLauncher(item.id)} active={lancherId === item.id} action>{item.name}</ListGroupItem>
+            <ListGroupItem tag="a" on:click={handleChangeLauncher(item.id)} active={lancherId === item.id} action>{item.name}
+                <span style="float:right" on:click|preventDefault|stopPropagation={removeLauncher(item)}><Trash2Icon size="1x"/></span></ListGroupItem>
             {/each}
           </ListGroup>
     </Col>

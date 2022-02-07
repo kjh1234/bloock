@@ -65,4 +65,4 @@ goto main
 
     echo | set /p dummy="Finished."
     echo .
-    call "%USERPROFILE%\Desktop\Temp\runner.bat"
+    call "%USERPROFILE%\bloock\temp\runner.bat"

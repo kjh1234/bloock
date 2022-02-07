@@ -1,6 +1,6 @@
 {
   "name": "bloock",
-  "version": "0.0.6",
+  "version": "0.0.8",
   "private": true,
   "main": "main.js",
   "build": {
@@ -30,6 +30,7 @@
     "svelte-feather-icons": "^3.5.0",
     "svelte-router-spa": "^6.0.3",
     "sveltestrap": "^5.7.0",
+    "uuid": "^8.3.2",
     "yarn": "^1.22.17"
   },
   "devDependencies": {
