@@ -72,7 +72,6 @@ bundle
 Launcher: <Button color="primary" outline on:click={createModalOpen}
     >Create</Button
 >
-<p>Route params are: {JSON.stringify(currentRoute.namedParams)} and {JSON.stringify(currentRoute.queryParams)}</p>
 
 <Row>
     <Col xs="3">
