@@ -5,14 +5,13 @@
     import { Button, Navbar, NavbarBrand, ListGroup, ListGroupItem, InputGroup, InputGroupText, FormGroup, Label, Input, Modal, Progress } from "sveltestrap";
     import { Trash2Icon } from "svelte-feather-icons";
     import InstallConfig from "../components/InstallConfig.svelte";
+    import { PATHS, FILES} from "../const/index.js";
     import { v4 } from "uuid";
 
     const { app, dialog} = require("electron").remote;
     const child = require('child_process');
     const fs = require('fs');
     const path = require('path');
-    const http = require('http');
-    const https = require('https');
     const url = require('url');
     
     export let currentRoute;
@@ -40,6 +39,7 @@
             preCmds: []
         }, lancher.config);
     })()
+    $: installs = config.installs;
 
     bundleList.subscribe((value) => {
         bundles = value;
@@ -106,12 +106,12 @@
     }
     
     const run = () => {
-        let wsdFile = path.join(app.getPath('userData'), 'temp.wsb')
-        let tempPath = path.join(app.getPath('userData'), 'temp')
-        let installFile = path.join(tempPath, 'bloock-install.bat')
-        let runnerFile = path.join(tempPath, 'runner.bat')
+        let wsdFile = FILES.WSB
+        let tempPath = PATHS.INSTALL_CACHE
+        let installFile = FILES.INSTALL
+        let runnerFile = FILES.RUNNER
 
-        let sandboxPath = path.join("C:\\Users\\WDAGUtilityAccount\\bloock", 'temp')
+        let sandboxPath = PATHS.SANDBOX
 
         let wsd = `
             <Configuration>
@@ -146,7 +146,7 @@
 
         downloadOpen = true;
         fileDownloads = [];
-        Promise.all(downloads(config.installs)).then(() => {
+        Promise.all(downloads(installs)).then(() => {
             downloadOpen = false;
             fileDownloads = [];
         }).then(() => {
@@ -172,7 +172,7 @@
                 })),
                 new Promise(resolve => fs.writeFile(installFile, 
                     `
-                    \n${config.installs.map(e => `${e.cmd.replace(/%APP_PATH%/, sandboxPath)}`).join('\n')}
+                    \n${installs.map(e => `${e.cmd.replace(/%APP_PATH%/, sandboxPath)}`).join('\n')}
                     \n${sandboxPath}\\refresh.bat
                     `, (err) => {
                         resolve()
@@ -192,8 +192,8 @@
         })
     }
 
-    const downloads = (installs) => {
-        let tempPath = path.join(app.getPath('userData'), 'temp')
+    const downloads = () => {
+        let tempPath = PATHS.INSTALL_CACHE
         return installs.map(install => 
             new Promise(res => {
                 fs.stat(path.join(tempPath, install.name), (err, stats) => {
@@ -230,7 +230,7 @@
     }
 
     function download(uri, tempName) {
-        let tempPath = path.join(app.getPath('userData'), 'temp')
+        let tempPath = PATHS.INSTALL_CACHE
         let protocol = url.parse(uri).protocol.slice(0, -1);
 
         return new Promise((resolve, reject) => {
@@ -238,9 +238,15 @@
                 fs.unlink(tempName);
                 reject(e);
             }
+            let client = require("http");
+            let options = {};
             let fileDownload = fileDownloads.filter(e => e.id === tempName)[0]
 
-            require(protocol).get(uri, function(response) {
+            if(protocol === "https"){
+                client = require("https");
+                options = {rejectUnauthorized: false}
+            }
+            client.get(uri, options, function(response) {
                 if (response.statusCode >= 200 && response.statusCode < 300) {
                     var fileStream = fs.createWriteStream(path.join(tempPath, tempName));
                     fileDownload.size = 0;
@@ -297,7 +303,8 @@
 <FormGroup>
     <Button color="primary" outline on:click={appendInstall}>설치파일추가</Button>
     <ListGroup numbered>
-        {#each config.installs as install, index}
+        {#each installs as install, index}
+        {JSON.stringify(install)}
         <InstallConfig bind:install={install} on:removeInstall={removeInstall(install)} />
         {/each}
     </ListGroup>
