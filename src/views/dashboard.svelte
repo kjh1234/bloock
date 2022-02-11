@@ -3,14 +3,6 @@
     import { bundleList } from "../stores";
     import {
         Button,
-        Modal,
-        ModalBody,
-        ModalFooter,
-        ModalHeader,
-        Form,
-        FormGroup,
-        Input,
-        Label,
         Card,
         CardBody,
         CardFooter,
@@ -21,16 +13,14 @@
         Col,
         Row,
         Popover, ListGroup, ListGroupItem,
-    ButtonDropdown,
-    DropdownItem,
-    DropdownMenu,
-    DropdownToggle
     } from "sveltestrap";
+    import CreateBundleModal from "../components/CreateBundleModal.svelte";
     import { MoreHorizontalIcon } from "svelte-feather-icons";
 
     let list = [];
     let bundleName = "";
     let open = false;
+    let createModal;
 
     bundleList.subscribe((value) => {
         list = value;
@@ -43,7 +33,7 @@
         []
     );
 
-    const createModalOpen = () => ((bundleName = ""), (open = true));
+    const createModalOpen = () => (open = true);
     const createModalClose = () => (open = false);
     const createBundle = () => {
         if (bundleName.length === 0) {
@@ -99,27 +89,9 @@ Bundle: <Button color="primary" outline on:click={createModalOpen}
     </Row>
 {/each}
 
-<Modal isOpen={open} toggle={createModalClose}>
-    <ModalHeader toggle={createModalClose}>Create New Bundle</ModalHeader>
-    <ModalBody>
-        <Form>
-            <FormGroup>
-                <Label for="exampleSearch">Search</Label>
-                <Input
-                    type="text"
-                    name="bundleName"
-                    id="bundleName"
-                    placeholder="plase bundle name!"
-                    bind:value={bundleName}
-                    autofocus
-                />
-            </FormGroup>
-        </Form>
-    </ModalBody>
-    <ModalFooter>
-        <Button color="primary" on:click={createBundle}>Create</Button>
-    </ModalFooter>
-</Modal>
+
+<CreateBundleModal bind:this={createModal} bind:open={open} bind:value={bundleName} placeholder="plase bundle name!" on:createBundle={createBundle}></CreateBundleModal>
+
 
 {#each list as item}
 <Popover placement="right" target="{`btnMent${item.id}`}" dismissible>

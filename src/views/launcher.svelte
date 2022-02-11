@@ -304,7 +304,6 @@
     <Button color="primary" outline on:click={appendInstall}>설치파일추가</Button>
     <ListGroup numbered>
         {#each installs as install, index}
-        {JSON.stringify(install)}
         <InstallConfig bind:install={install} on:removeInstall={removeInstall(install)} />
         {/each}
     </ListGroup>
@@ -324,7 +323,7 @@
         </ListGroupItem>
         {/each}
     </ListGroup>
-    <Input placeholder="new Command"  on:focus={appendCommand} />
+    <Input placeholder="new Command" on:focus={appendCommand} />
 </FormGroup>
 
 
