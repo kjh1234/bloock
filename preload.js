@@ -3,7 +3,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { app} = require("electron").remote;
+const { app } = require("electron").remote;
 
 let tempPath = path.join(app.getPath('userData'), 'temp')
 let refreshFile = path.join(tempPath, 'refresh.bat')

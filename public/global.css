@@ -2,6 +2,7 @@ html, body {
 	position: relative;
 	width: 100%;
 	height: 100%;
+	min-width: 800px;
 }
 
 body {
@@ -60,4 +61,16 @@ button:not(:disabled):active {
 
 button:focus {
 	border-color: #666;
+}
+
+body .btn, body .form-control, body .input-group-text {
+	padding: .2rem .3rem;
+}
+
+body .list-group-item {
+	padding: .3rem .5rem;
+}
+
+body .input-group {
+	margin-bottom: .2rem;
 }

@@ -273,8 +273,12 @@
 </script>
 
 <Navbar color="light" light expand="md">
-    <Input placeholder="Check it out" bind:value={lancher.name} />
-    <Button color="primary" outline on:click={run}>Run</Button>
+    <InputGroup>
+        <Input placeholder="Check it out" bind:value={lancher.name} />
+        <InputGroupText>
+            <Button color="primary" outline on:click={run}>Run</Button>
+        </InputGroupText>
+    </InputGroup>
 </Navbar>
 
 <FormGroup>
@@ -285,7 +289,7 @@
 </FormGroup>
 <FormGroup>
     <Button color="primary" outline on:click={appendFolder}>폴더 추가</Button>
-    <ListGroup numbered>
+    <ListGroup>
         {#each config.sharedFolders as folder, index}
         <ListGroupItem>
             <InputGroup>
@@ -302,9 +306,8 @@
 
 <FormGroup>
     <Button color="primary" outline on:click={appendInstall}>설치파일추가</Button>
-    <ListGroup numbered>
+    <ListGroup>
         {#each installs as install, index}
-        {JSON.stringify(install)}
         <InstallConfig bind:install={install} on:removeInstall={removeInstall(install)} />
         {/each}
     </ListGroup>
@@ -312,17 +315,17 @@
 
 <FormGroup>
     <Label>시작 프로그램</Label>
-    <ListGroup numbered>
-        {#each config.preCmds as cmd, index}
+    <ListGroup>
         <ListGroupItem>
+        {#each config.preCmds as cmd, index}
             <InputGroup>
                 <Input placeholder="Append Command" bind:this="{cmdInputs[index]}" bind:value={cmd.cmd}/>
                 <InputGroupText>
                     <span on:click={removeCommand(cmd)}><Trash2Icon size="1x"/></span>
                 </InputGroupText>
             </InputGroup>
-        </ListGroupItem>
         {/each}
+        </ListGroupItem>
     </ListGroup>
     <Input placeholder="new Command"  on:focus={appendCommand} />
 </FormGroup>
