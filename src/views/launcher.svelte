@@ -3,7 +3,7 @@
     // import { dialog } from "electron";
     import { bundleList } from "../stores";
     import { Button, Navbar, NavbarBrand, ListGroup, ListGroupItem, InputGroup, InputGroupText, FormGroup, Label, Input, Modal, Progress } from "sveltestrap";
-    import { Trash2Icon } from "svelte-feather-icons";
+    import { EditIcon, Trash2Icon } from "svelte-feather-icons";
     import InstallConfig from "../components/InstallConfig.svelte";
     import { PATHS, FILES} from "../const/index.js";
     import { v4 } from "uuid";
@@ -59,6 +59,20 @@
                     path: result.filePaths[0],
                     readOnly: true
                 })
+                config = config;
+                bundleList.set(bundles);
+            }
+        }).catch(err => {
+            console.log(err)
+        })
+    }
+    const changeFolder = (index) => {
+        
+        dialog.showOpenDialog({
+            properties: ['openDirectory']
+        }).then(result => {
+            if (result.canceled === false) {
+                config.sharedFolders[index].path = result.filePaths[0]
                 config = config;
                 bundleList.set(bundles);
             }
@@ -288,15 +302,15 @@
     <Input id="vGpu" type="checkbox" bind:checked={config.network} label="Networking" />
 </FormGroup>
 <FormGroup>
-    <Button color="primary" outline on:click={appendFolder}>폴더 추가</Button>
+    <Button color="primary" outline on:click={appendFolder}>공유 폴더 추가</Button>
     <ListGroup>
         {#each config.sharedFolders as folder, index}
         <ListGroupItem>
             <InputGroup>
-                <Input placeholder="Check it out" bind:value={folder.path} readonly/>
+                <span on:click={() => changeFolder(index)}><EditIcon size="2x"/></span><Input placeholder="Check it out" bind:value={folder.path} readonly/>
                 <InputGroupText>
-                    <Input id="readOnly_{index}" type="checkbox" bind:checked={folder.readOnly} aria-label="ReadOnly" />
-                    <span on:click={removeFolder(folder)}><Trash2Icon size="1x"/></span>
+                    ReadOnly <Input id="readOnly_{index}" type="checkbox" bind:checked={folder.readOnly} aria-label="ReadOnly" />
+                    <span on:click={() => removeFolder(folder)}><Trash2Icon size="1x"/></span>
                 </InputGroupText>
             </InputGroup>
         </ListGroupItem>

@@ -1,6 +1,7 @@
 <script>
+    import { tick } from "svelte";
     import { navigateTo } from "svelte-router-spa";
-    import { bundleList } from "../stores";
+    import { bundleList, globalConfig } from "../stores";
     import {
         Button,
         Modal,
@@ -30,6 +31,7 @@
 
     let list = [];
     let bundleName = "";
+    let bundleNameInput;
     let open = false;
 
     bundleList.subscribe((value) => {
@@ -43,7 +45,14 @@
         []
     );
 
-    const createModalOpen = () => ((bundleName = ""), (open = true));
+    const createModalOpen = () => {
+        bundleName = "";
+        open = true;
+
+        tick().then(() => {
+            bundleNameInput.$$.ctx[bundleNameInput.$$.props.inner].focus();
+        });
+    }
     const createModalClose = () => (open = false);
     const createBundle = () => {
         if (bundleName.length === 0) {
@@ -55,6 +64,9 @@
         bundleList.set(list);
         bundleName = "";
         createModalClose();
+    };
+    const createBundleKeyPress = e => {
+        if (e.charCode === 13) createBundle();
     };
     const moveBundle = (id) => {
         navigateTo(`/bundle/${id}`);
@@ -104,14 +116,15 @@ Bundle: <Button color="primary" outline on:click={createModalOpen}
     <ModalBody>
         <Form>
             <FormGroup>
-                <Label for="exampleSearch">Search</Label>
+                <Label for="bundleName">Bundle Name</Label>
                 <Input
                     type="text"
                     name="bundleName"
                     id="bundleName"
                     placeholder="plase bundle name!"
+                    bind:this={bundleNameInput}
+                    on:keypress={createBundleKeyPress}
                     bind:value={bundleName}
-                    autofocus
                 />
             </FormGroup>
         </Form>
