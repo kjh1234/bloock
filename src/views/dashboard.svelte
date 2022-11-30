@@ -22,6 +22,7 @@
         Col,
         Row,
         Popover, ListGroup, ListGroupItem,
+    Dropdown,
     ButtonDropdown,
     DropdownItem,
     DropdownMenu,
@@ -92,11 +93,15 @@ Bundle: <Button color="primary" outline on:click={createModalOpen}
                         <CardHeader>
                             <CardTitle
                                 >Bundle 
-                                <a id="{`btnMent${item.id}`}"
-                                    style="float:right"
-                                    on:click|stopPropagation={() => {}}  tabindex="0"
-                                    ><MoreHorizontalIcon size="1x" /></a
-                                ></CardTitle
+                                <span style="float:right" on:click|stopPropagation={() => {}}>
+                                    <Dropdown >
+                                        <DropdownToggle nav ><MoreHorizontalIcon size="1x" /></DropdownToggle>
+                                        <DropdownMenu end>
+                                            <DropdownItem on:click={() => {removeBundle(item)}}>삭제</DropdownItem>
+                                        </DropdownMenu>
+                                    </Dropdown>
+                                    </span>
+                                </CardTitle
                             >
                         </CardHeader>
                         <CardBody>
@@ -133,11 +138,3 @@ Bundle: <Button color="primary" outline on:click={createModalOpen}
         <Button color="primary" on:click={createBundle}>Create</Button>
     </ModalFooter>
 </Modal>
-
-{#each list as item}
-<Popover placement="right" target="{`btnMent${item.id}`}" dismissible>
-    <ListGroup>
-        <ListGroupItem color="danger" on:click={removeBundle(item)}>삭제</ListGroupItem>
-    </ListGroup>
-</Popover>
-{/each}
